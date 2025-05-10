@@ -60,10 +60,20 @@ export default function JobsPage() {
 
   useEffect(() => {
     fetchJobs()
-  }, [filters])
+  }, [fetchJobs])
 
-  const handleSearch = () => {
-    setLoading(true)
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    fetchJobs()
+  }
+
+  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters({ ...filters, category: e.target.value })
+    fetchJobs()
+  }
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFilters({ ...filters, location: e.target.value })
     fetchJobs()
   }
 
@@ -107,7 +117,7 @@ export default function JobsPage() {
               </label>
               <select
                 value={filters.category}
-                onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+                onChange={handleCategoryChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">הכל</option>
@@ -125,7 +135,7 @@ export default function JobsPage() {
               </label>
               <select
                 value={filters.location}
-                onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                onChange={handleLocationChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">הכל</option>

@@ -2,11 +2,18 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/router'
+
+interface AuthError {
+  message: string;
+}
 
 export default function Auth() {
   const [loading, setLoading] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,6 +47,28 @@ export default function Auth() {
       setLoading(false)
     }
   }
+
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+
+    try {
+      if (email === 'solodohavalery@gmail.com' && password === 'hypsin245') {
+        localStorage.setItem('isLoggedIn', 'true');
+        router.push('/admin');
+      } else {
+        throw new Error('פרטי התחברות שגויים');
+      }
+    } catch (err: unknown) {
+      const error = err as AuthError;
+      setError(error.message);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('isLoggedIn');
+    router.push('/');
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4">

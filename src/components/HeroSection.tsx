@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import SearchBar from './SearchBar';
 import { supabase } from '@/lib/supabase';
+import Image from 'next/image';
 
 export default function HeroSection() {
   const [search, setSearch] = useState('');
@@ -56,21 +57,25 @@ export default function HeroSection() {
             {popularCategories.length === 0 ? (
               <span className="text-blue-200 ml-2">לא נמצאו קטגוריות</span>
             ) : (
-              popularCategories.map((cat, idx) => (
-                <Link key={cat} href={`/jobs?category=${encodeURIComponent(cat)}`} className="underline text-blue-200 mr-2">
-                  {cat}
-                </Link>
+              popularCategories.map((category) => (
+                <div
+                  key={category}
+                  className="bg-white/10 backdrop-blur-lg rounded-lg p-4 text-center hover:bg-white/20 transition-all duration-300"
+                >
+                  <h3 className="text-lg font-semibold text-white">{category}</h3>
+                </div>
               ))
             )}
           </div>
         </div>
         <div className="mt-10 md:mt-0 md:ml-10 flex-shrink-0">
-          <div className="w-72 h-72 bg-white/10 rounded-full flex items-center justify-center overflow-hidden">
-            <img
+          <div className="relative w-32 h-32 mx-auto mb-6">
+            <Image
               src="/avatar.png"
-              alt="אוואטר"
-              className="w-full h-full object-cover rounded-full"
-              style={{ maxWidth: '100%', maxHeight: '100%' }}
+              alt="Avatar"
+              fill
+              className="rounded-full object-cover"
+              priority
             />
           </div>
         </div>

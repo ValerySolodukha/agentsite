@@ -5,13 +5,22 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import JobCard from '@/components/JobCard'
 
+interface FormData {
+  name: string;
+  category: string;
+  location: string;
+  description: string;
+  link_url: string;
+}
+
 interface Job {
-  id: string
-  name: string
-  category: string
-  location: string
-  description: string
-  link_url: string
+  id: number;
+  name: string;
+  category: string;
+  location: string;
+  description: string;
+  link_url: string;
+  created_at: string;
 }
 
 export default function AdminPage() {
@@ -27,6 +36,14 @@ export default function AdminPage() {
   const [currentJob, setCurrentJob] = useState<Partial<Job>>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    category: '',
+    location: '',
+    description: '',
+    link_url: ''
+  })
 
   useEffect(() => {
     fetchJobs()
@@ -49,55 +66,48 @@ export default function AdminPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    
-    try {
-      const jobData = {
-        name: currentJob.name,
-        category: currentJob.category,
-        location: currentJob.location,
-        description: currentJob.description,
-        link_url: currentJob.link_url
-      }
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-      if (isEditing && currentJob.id) {
-        const { error } = await supabase
-          .from('jobs')
-          .update(jobData)
-          .eq('id', currentJob.id)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('jobs')
-          .insert([jobData])
-        if (error) throw error
-      }
-      
-      await fetchJobs()
-      setIsEditing(false)
-      setCurrentJob({})
-    } catch (error: any) {
-      console.error('Error saving job:', error)
-      setError(error.message || 'שגיאה בשמירת המשרה')
+    try {
+      const { data, error: submitError } = await supabase
+        .from('jobs')
+        .insert([formData])
+        .select();
+
+      if (submitError) throw submitError;
+      setSuccess('המשרה נוספה בהצלחה!');
+      setFormData({
+        name: '',
+        category: '',
+        location: '',
+        description: '',
+        link_url: ''
+      });
+      fetchJobs();
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     }
-  }
+  };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('האם אתה בטוח שברצונך למחוק משרה זו?')) return
+  const handleDelete = async (id: number) => {
     try {
-      const { error } = await supabase
+      const { error: deleteError } = await supabase
         .from('jobs')
         .delete()
-        .eq('id', id)
-      if (error) throw error
-      await fetchJobs()
-    } catch (error: any) {
-      console.error('Error deleting job:', error)
-      setError(error.message || 'שגיאה במחיקת המשרה')
+        .eq('id', id);
+
+      if (deleteError) throw deleteError;
+      setSuccess('המשרה נמחקה בהצלחה!');
+      fetchJobs();
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
     }
-  }
+  };
 
   const handleEdit = (id: string) => {
     const job = jobs.find(j => j.id === id)
@@ -121,6 +131,12 @@ export default function AdminPage() {
         {error && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center" role="alert">
             <p>{error}</p>
+          </div>
+        )}
+
+        {success && (
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4 text-center" role="alert">
+            <p>{success}</p>
           </div>
         )}
 
